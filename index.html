@@ -1,0 +1,729 @@
+DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dalumk Control - Gestão Financeira</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .period-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .period-selector input, .period-selector select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .period-selector input:focus, .period-selector select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card.receitas { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .card.despesas { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .card.impostos { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333; }
+        .card.lucro { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; }
+
+        .card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .card .value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+
+        .form-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input, select, textarea {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .transactions-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            margin-top: 25px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .currency-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .exchange-rate {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .form-group {
+                grid-template-columns: 1fr;
+            }
+            
+            table {
+                font-size: 14px;
+            }
+            
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💼 Dalumk Control</h1>
+        <p class="subtitle">Powered by Dalumk Corp - Gestão Financeira Empresarial</p>
+
+        <div class="period-selector">
+            <select id="mesAno">
+                <option value="">Selecione o Mês/Ano</option>
+            </select>
+            <div class="currency-selector">
+                <label>Moeda:</label>
+                <select id="moedaPrincipal">
+                    <option value="USD">USD ($)</option>
+                    <option value="BRL">BRL (R$)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="exchange-rate" id="taxaCambio">
+            Taxa de câmbio: 1 USD = 5.20 BRL (Atualizar manualmente conforme necessário)
+        </div>
+
+        <div class="summary-cards">
+            <div class="card receitas">
+                <h3>💰 Receitas Totais</h3>
+                <div class="value" id="totalReceitas">$0.00</div>
+            </div>
+            <div class="card despesas">
+                <h3>📊 Despesas Operacionais</h3>
+                <div class="value" id="totalDespesas">$0.00</div>
+            </div>
+            <div class="card impostos">
+                <h3>🏛️ Impostos</h3>
+                <div class="value" id="totalImpostos">$0.00</div>
+            </div>
+            <div class="card lucro">
+                <h3>📈 Lucro Líquido</h3>
+                <div class="value" id="lucroLiquido">$0.00</div>
+            </div>
+        </div>
+
+        <!-- Receitas -->
+        <div class="form-section">
+            <h2>💰 Receitas</h2>
+            <div class="form-group">
+                <input type="date" id="dataReceita" placeholder="Data">
+                <input type="text" id="descricaoReceita" placeholder="Descrição da Receita">
+                <select id="categoriaReceita">
+                    <option value="">Categoria</option>
+                    <option value="Vendas">Vendas de Produtos</option>
+                    <option value="Servicos">Prestação de Serviços</option>
+                    <option value="Consultoria">Consultoria</option>
+                    <option value="Comissões">Comissões</option>
+                    <option value="Outros">Outros</option>
+                </select>
+                <input type="number" id="valorReceita" placeholder="Valor" step="0.01">
+                <select id="moedaReceita">
+                    <option value="USD">USD</option>
+                    <option value="BRL">BRL</option>
+                </select>
+            </div>
+            <button onclick="adicionarReceita()">Adicionar Receita</button>
+        </div>
+
+        <!-- Despesas Operacionais -->
+        <div class="form-section">
+            <h2>📊 Despesas Operacionais</h2>
+            <div class="form-group">
+                <input type="date" id="dataDespesa" placeholder="Data">
+                <input type="text" id="descricaoDespesa" placeholder="Descrição da Despesa">
+                <select id="categoriaDespesa">
+                    <option value="">Categoria</option>
+                    <option value="Aluguel">Aluguel/Lease</option>
+                    <option value="Utilities">Utilities (Água, Luz, Internet)</option>
+                    <option value="Marketing">Marketing/Publicidade</option>
+                    <option value="Fornecedores">Fornecedores/Inventory</option>
+                    <option value="Equipamentos">Equipamentos</option>
+                    <option value="Software">Software/Subscriptions</option>
+                    <option value="Transporte">Transporte/Combustível</option>
+                    <option value="Profissionais">Serviços Profissionais</option>
+                    <option value="Bancarias">Taxas Bancárias</option>
+                    <option value="Outros">Outros</option>
+                </select>
+                <input type="number" id="valorDespesa" placeholder="Valor" step="0.01">
+                <select id="moedaDespesa">
+                    <option value="USD">USD</option>
+                    <option value="BRL">BRL</option>
+                </select>
+            </div>
+            <button onclick="adicionarDespesa()">Adicionar Despesa</button>
+        </div>
+
+        <!-- Impostos -->
+        <div class="form-section">
+            <h2>🏛️ Impostos</h2>
+            <div class="form-group">
+                <input type="date" id="dataImposto" placeholder="Data">
+                <input type="text" id="descricaoImposto" placeholder="Descrição do Imposto">
+                <select id="categoriaImposto">
+                    <option value="">Tipo de Imposto</option>
+                    <option value="Federal">Federal Income Tax</option>
+                    <option value="State">State Tax</option>
+                    <option value="Sales">Sales Tax</option>
+                    <option value="Payroll">Payroll Tax</option>
+                    <option value="Self-Employment">Self-Employment Tax</option>
+                    <option value="IRPF">IRPF (Brasil)</option>
+                    <option value="Outros">Outros</option>
+                </select>
+                <input type="number" id="valorImposto" placeholder="Valor" step="0.01">
+                <select id="moedaImposto">
+                    <option value="USD">USD</option>
+                    <option value="BRL">BRL</option>
+                </select>
+            </div>
+            <button onclick="adicionarImposto()">Adicionar Imposto</button>
+        </div>
+
+        <!-- Pro-labore -->
+        <div class="form-section">
+            <h2>👤 Pro-labore</h2>
+            <div class="form-group">
+                <input type="date" id="dataProLabore" placeholder="Data">
+                <input type="text" id="descricaoProLabore" placeholder="Descrição" value="Pro-labore Mensal">
+                <input type="number" id="valorProLabore" placeholder="Valor" step="0.01">
+                <select id="moedaProLabore">
+                    <option value="USD">USD</option>
+                    <option value="BRL">BRL</option>
+                </select>
+            </div>
+            <button onclick="adicionarProLabore()">Adicionar Pro-labore</button>
+        </div>
+
+        <!-- Tabela de Transações -->
+        <div class="transactions-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Categoria</th>
+                        <th>Descrição</th>
+                        <th>Valor</th>
+                        <th>Moeda</th>
+                        <th>Editar</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaTransacoes">
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px; text-align: center;">
+            <button onclick="exportarDados()" style="margin-right: 10px;">📊 Exportar Relatório</button>
+            <button onclick="limparDados()" style="background: #e74c3c;">🗑️ Limpar Todos os Dados</button>
+        </div>
+    </div>
+
+    <script>
+        let transacoes = [];
+        let taxaCambio = 5.20; // Taxa USD para BRL
+        let editandoId = null;
+
+        // Inicializar o seletor de mês/ano
+        function inicializarMesAno() {
+            const select = document.getElementById('mesAno');
+            const hoje = new Date();
+            
+            for (let i = -12; i <= 12; i++) {
+                const data = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
+                const valor = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
+                const texto = data.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+                const option = new Option(texto, valor);
+                select.add(option);
+            }
+            
+            // Selecionar mês atual
+            const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+            select.value = mesAtual;
+        }
+
+        function converterParaMoedaPrincipal(valor, moedaOrigem) {
+            const moedaPrincipal = document.getElementById('moedaPrincipal').value;
+            
+            if (moedaOrigem === moedaPrincipal) {
+                return valor;
+            }
+            
+            if (moedaPrincipal === 'USD' && moedaOrigem === 'BRL') {
+                return valor / taxaCambio;
+            } else if (moedaPrincipal === 'BRL' && moedaOrigem === 'USD') {
+                return valor * taxaCambio;
+            }
+            
+            return valor;
+        }
+
+        function formatarMoeda(valor, moeda = null) {
+            const moedaPrincipal = moeda || document.getElementById('moedaPrincipal').value;
+            const simbolo = moedaPrincipal === 'USD' ? '$' : 'R$';
+            return `${simbolo}${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        function adicionarReceita() {
+            const data = document.getElementById('dataReceita').value;
+            const descricao = document.getElementById('descricaoReceita').value;
+            const categoria = document.getElementById('categoriaReceita').value;
+            const valor = parseFloat(document.getElementById('valorReceita').value);
+            const moeda = document.getElementById('moedaReceita').value;
+
+            if (!data || !descricao || !categoria || !valor) {
+                alert('Por favor, preencha todos os campos da receita.');
+                return;
+            }
+
+            if (editandoId) {
+                // Editando transação existente
+                const index = transacoes.findIndex(t => t.id === editandoId);
+                if (index !== -1) {
+                    transacoes[index] = {
+                        ...transacoes[index],
+                        data,
+                        categoria,
+                        descricao,
+                        valor,
+                        moeda,
+                        valorConvertido: converterParaMoedaPrincipal(valor, moeda)
+                    };
+                }
+                editandoId = null;
+                document.querySelector('.form-section button').textContent = 'Adicionar Receita';
+            } else {
+                // Adicionando nova transação
+                const transacao = {
+                    id: Date.now(),
+                    data,
+                    tipo: 'Receita',
+                    categoria,
+                    descricao,
+                    valor,
+                    moeda,
+                    valorConvertido: converterParaMoedaPrincipal(valor, moeda)
+                };
+                transacoes.push(transacao);
+            }
+
+            atualizarInterface();
+            limparFormularioReceita();
+        }
+
+        function adicionarDespesa() {
+            const data = document.getElementById('dataDespesa').value;
+            const descricao = document.getElementById('descricaoDespesa').value;
+            const categoria = document.getElementById('categoriaDespesa').value;
+            const valor = parseFloat(document.getElementById('valorDespesa').value);
+            const moeda = document.getElementById('moedaDespesa').value;
+
+            if (!data || !descricao || !categoria || !valor) {
+                alert('Por favor, preencha todos os campos da despesa.');
+                return;
+            }
+
+            const transacao = {
+                id: Date.now(),
+                data,
+                tipo: 'Despesa',
+                categoria,
+                descricao,
+                valor,
+                moeda,
+                valorConvertido: converterParaMoedaPrincipal(valor, moeda)
+            };
+
+            transacoes.push(transacao);
+            atualizarInterface();
+            limparFormularioDespesa();
+        }
+
+        function adicionarImposto() {
+            const data = document.getElementById('dataImposto').value;
+            const descricao = document.getElementById('descricaoImposto').value;
+            const categoria = document.getElementById('categoriaImposto').value;
+            const valor = parseFloat(document.getElementById('valorImposto').value);
+            const moeda = document.getElementById('moedaImposto').value;
+
+            if (!data || !descricao || !categoria || !valor) {
+                alert('Por favor, preencha todos os campos do imposto.');
+                return;
+            }
+
+            const transacao = {
+                id: Date.now(),
+                data,
+                tipo: 'Imposto',
+                categoria,
+                descricao,
+                valor,
+                moeda,
+                valorConvertido: converterParaMoedaPrincipal(valor, moeda)
+            };
+
+            transacoes.push(transacao);
+            atualizarInterface();
+            limparFormularioImposto();
+        }
+
+        function adicionarProLabore() {
+            const data = document.getElementById('dataProLabore').value;
+            const descricao = document.getElementById('descricaoProLabore').value;
+            const valor = parseFloat(document.getElementById('valorProLabore').value);
+            const moeda = document.getElementById('moedaProLabore').value;
+
+            if (!data || !descricao || !valor) {
+                alert('Por favor, preencha todos os campos do pro-labore.');
+                return;
+            }
+
+            const transacao = {
+                id: Date.now(),
+                data,
+                tipo: 'Pro-labore',
+                categoria: 'Pro-labore',
+                descricao,
+                valor,
+                moeda,
+                valorConvertido: converterParaMoedaPrincipal(valor, moeda)
+            };
+
+            transacoes.push(transacao);
+            atualizarInterface();
+            limparFormularioProLabore();
+        }
+
+        function editarTransacao(id) {
+            const transacao = transacoes.find(t => t.id === id);
+            if (!transacao) return;
+
+            editandoId = id;
+
+            // Preencher o formulário correspondente
+            if (transacao.tipo === 'Receita') {
+                document.getElementById('dataReceita').value = transacao.data;
+                document.getElementById('descricaoReceita').value = transacao.descricao;
+                document.getElementById('categoriaReceita').value = transacao.categoria;
+                document.getElementById('valorReceita').value = transacao.valor;
+                document.getElementById('moedaReceita').value = transacao.moeda;
+                document.querySelector('.form-section button').textContent = 'Atualizar Receita';
+            } else if (transacao.tipo === 'Despesa') {
+                document.getElementById('dataDespesa').value = transacao.data;
+                document.getElementById('descricaoDespesa').value = transacao.descricao;
+                document.getElementById('categoriaDespesa').value = transacao.categoria;
+                document.getElementById('valorDespesa').value = transacao.valor;
+                document.getElementById('moedaDespesa').value = transacao.moeda;
+                document.querySelectorAll('.form-section button')[1].textContent = 'Atualizar Despesa';
+            } else if (transacao.tipo === 'Imposto') {
+                document.getElementById('dataImposto').value = transacao.data;
+                document.getElementById('descricaoImposto').value = transacao.descricao;
+                document.getElementById('categoriaImposto').value = transacao.categoria;
+                document.getElementById('valorImposto').value = transacao.valor;
+                document.getElementById('moedaImposto').value = transacao.moeda;
+                document.querySelectorAll('.form-section button')[2].textContent = 'Atualizar Imposto';
+            } else if (transacao.tipo === 'Pro-labore') {
+                document.getElementById('dataProLabore').value = transacao.data;
+                document.getElementById('descricaoProLabore').value = transacao.descricao;
+                document.getElementById('valorProLabore').value = transacao.valor;
+                document.getElementById('moedaProLabore').value = transacao.moeda;
+                document.querySelectorAll('.form-section button')[3].textContent = 'Atualizar Pro-labore';
+            }
+
+            // Scroll para o formulário correspondente
+            document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function removerTransacao(id) {
+            if (confirm('Tem certeza que deseja excluir esta transação?')) {
+                transacoes = transacoes.filter(t => t.id !== id);
+                atualizarInterface();
+            }
+        }
+            const mesAno = document.getElementById('mesAno').value;
+            let transacoesFiltradas = transacoes;
+
+            if (mesAno) {
+                transacoesFiltradas = transacoes.filter(t => t.data.startsWith(mesAno));
+            }
+
+            // Recalcular valores convertidos
+            transacoesFiltradas.forEach(t => {
+                t.valorConvertido = converterParaMoedaPrincipal(t.valor, t.moeda);
+            });
+
+            const receitas = transacoesFiltradas.filter(t => t.tipo === 'Receita').reduce((sum, t) => sum + t.valorConvertido, 0);
+            const despesas = transacoesFiltradas.filter(t => t.tipo === 'Despesa').reduce((sum, t) => sum + t.valorConvertido, 0);
+            const impostos = transacoesFiltradas.filter(t => t.tipo === 'Imposto').reduce((sum, t) => sum + t.valorConvertido, 0);
+            const proLabore = transacoesFiltradas.filter(t => t.tipo === 'Pro-labore').reduce((sum, t) => sum + t.valorConvertido, 0);
+
+            const lucroLiquido = receitas - despesas - impostos - proLabore;
+
+            document.getElementById('totalReceitas').textContent = formatarMoeda(receitas);
+            document.getElementById('totalDespesas').textContent = formatarMoeda(despesas);
+            document.getElementById('totalImpostos').textContent = formatarMoeda(impostos);
+            document.getElementById('lucroLiquido').textContent = formatarMoeda(lucroLiquido);
+
+            atualizarTabela(transacoesFiltradas);
+        }
+
+        function atualizarTabela(transacoesFiltradas) {
+            const tbody = document.getElementById('tabelaTransacoes');
+            tbody.innerHTML = '';
+
+            transacoesFiltradas.sort((a, b) => new Date(b.data) - new Date(a.data)).forEach(transacao => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(transacao.data).toLocaleDateString('pt-BR')}</td>
+                    <td>${transacao.tipo}</td>
+                    <td>${transacao.categoria}</td>
+                    <td>${transacao.descricao}</td>
+                    <td>${formatarMoeda(transacao.valor, transacao.moeda)}</td>
+                    <td>${transacao.moeda}</td>
+                    <td><button class="delete-btn" onclick="editarTransacao(${transacao.id})" style="background: #3498db; margin-right: 5px;">Editar</button></td>
+                    <td><button class="delete-btn" onclick="removerTransacao(${transacao.id})">Excluir</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function limparFormularioReceita() {
+            document.getElementById('dataReceita').value = '';
+            document.getElementById('descricaoReceita').value = '';
+            document.getElementById('categoriaReceita').value = '';
+            document.getElementById('valorReceita').value = '';
+            document.getElementById('moedaReceita').value = 'USD';
+        }
+
+        function limparFormularioDespesa() {
+            document.getElementById('dataDespesa').value = '';
+            document.getElementById('descricaoDespesa').value = '';
+            document.getElementById('categoriaDespesa').value = '';
+            document.getElementById('valorDespesa').value = '';
+            document.getElementById('moedaDespesa').value = 'USD';
+        }
+
+        function limparFormularioImposto() {
+            document.getElementById('dataImposto').value = '';
+            document.getElementById('descricaoImposto').value = '';
+            document.getElementById('categoriaImposto').value = '';
+            document.getElementById('valorImposto').value = '';
+            document.getElementById('moedaImposto').value = 'USD';
+        }
+
+        function limparFormularioProLabore() {
+            document.getElementById('dataProLabore').value = '';
+            document.getElementById('descricaoProLabore').value = 'Pro-labore Mensal';
+            document.getElementById('valorProLabore').value = '';
+            document.getElementById('moedaProLabore').value = 'USD';
+        }
+
+        function exportarDados() {
+            const mesAno = document.getElementById('mesAno').value;
+            let transacoesFiltradas = transacoes;
+
+            if (mesAno) {
+                transacoesFiltradas = transacoes.filter(t => t.data.startsWith(mesAno));
+            }
+
+            let csv = 'Data,Tipo,Categoria,Descrição,Valor,Moeda\n';
+            transacoesFiltradas.forEach(t => {
+                csv += `${t.data},${t.tipo},${t.categoria},"${t.descricao}",${t.valor},${t.moeda}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `relatorio_financeiro_${mesAno || 'completo'}.csv`;
+            a.click();
+        }
+
+        function limparDados() {
+            if (confirm('Tem certeza que deseja limpar todos os dados? Esta ação não pode ser desfeita.')) {
+                transacoes = [];
+                atualizarInterface();
+            }
+        }
+
+        // Event listeners
+        document.getElementById('mesAno').addEventListener('change', atualizarInterface);
+        document.getElementById('moedaPrincipal').addEventListener('change', atualizarInterface);
+
+        // Inicializar
+        inicializarMesAno();
+        atualizarInterface();
+    </script>
+</body>
+</html>
